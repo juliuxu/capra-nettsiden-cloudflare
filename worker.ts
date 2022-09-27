@@ -78,9 +78,8 @@ export function createPagesFunctionHandler<Env = any>({
       // Store the fetched response as cacheKey
       // Use waitUntil so you can return the response without blocking on
       // writing to cache
-      const responseClone = response.clone();
-      responseClone.headers.append("Date", new Date().toUTCString());
-      context.waitUntil(cache.put(cacheKey, responseClone));
+      response.headers.set("X-SWR-Date", new Date().toUTCString());
+      context.waitUntil(cache.put(cacheKey, response.clone()));
     }
     return response;
   };
@@ -98,7 +97,7 @@ export function createPagesFunctionHandler<Env = any>({
       const cachedResponse = await cache?.match(cacheKey);
       if (cachedResponse) {
         // stale-while-revalidate
-        const responseDate = cachedResponse.headers.get("Date");
+        const responseDate = cachedResponse.headers.get("X-SWR-Date");
         const cacheControl = cachedResponse.headers.get("Cache-Control");
 
         const date = responseDate ? new Date(responseDate) : null;
