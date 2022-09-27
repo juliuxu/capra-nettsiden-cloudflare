@@ -111,6 +111,8 @@ export function createPagesFunctionHandler<Env = any>({
         matches = cacheControl?.match(/stale-while-revalidate=(\d+)/);
         const staleWhileRevalidate = matches ? parseInt(matches[1], 10) : 0;
 
+        const res = cachedResponse.clone();
+        res.headers.set("x-debug", `EYO`);
         if (
           sMaxage &&
           staleWhileRevalidate &&
@@ -118,13 +120,10 @@ export function createPagesFunctionHandler<Env = any>({
           sMaxage - staleWhileRevalidate < secondsSinceDate
         ) {
           handleFetch(context, cacheKey, cache);
+          res.headers.set("x-debug-yo", `SWR`);
         }
 
-        const res = cachedResponse.clone();
-        // res.headers.set(
-        //   "x-debug",
-        //   `sMaxage=${sMaxage}, staleWhileRevalidate=${staleWhileRevalidate}, secondsSinceDate=${secondsSinceDate}`,
-        // );
+        // sMaxage=${sMaxage}, staleWhileRevalidate=${staleWhileRevalidate}, secondsSinceDate=${secondsSinceDate}
 
         return res;
       }
