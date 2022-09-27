@@ -121,10 +121,10 @@ export function createPagesFunctionHandler<Env = any>({
         }
 
         const res = cachedResponse.clone();
-        res.headers.set(
-          "x-debug",
-          `sMaxage=${sMaxage}, staleWhileRevalidate=${staleWhileRevalidate}, secondsSinceDate=${secondsSinceDate}`,
-        );
+        // res.headers.set(
+        //   "x-debug",
+        //   `sMaxage=${sMaxage}, staleWhileRevalidate=${staleWhileRevalidate}, secondsSinceDate=${secondsSinceDate}`,
+        // );
 
         return res;
       }
