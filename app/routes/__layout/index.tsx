@@ -1,6 +1,6 @@
-import type { MetaFunction } from "@remix-run/server-runtime";
-import { json } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
+import type { HeadersFunction, MetaFunction } from "@remix-run/server-runtime";
+import { json } from "@remix-run/server-runtime";
 
 import { BubbleSandwich } from "~/components/bubbles/bubble-sandwich";
 import { fetchEmployeeImages } from "~/components/bubbles/capra-helper.server";
@@ -27,8 +27,17 @@ export const loader = async () => {
       .then(shuffled)
       .then((l) => l.slice(0, 13)),
   ]);
-  return json({ images, employeeImages });
+  return json(
+    { images, employeeImages },
+    {
+      headers: {
+        "Cache-Control":
+          "public, max-age=60, s-maxage=86400, stale-while-revalidate=2678400",
+      },
+    },
+  );
 };
+export const headers: HeadersFunction = ({ loaderHeaders }) => loaderHeaders;
 
 export default function Index() {
   const { images, employeeImages } = useLoaderData<typeof loader>();

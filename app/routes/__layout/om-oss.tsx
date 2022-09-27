@@ -1,5 +1,5 @@
 import { useLoaderData } from "@remix-run/react";
-import { json } from "@remix-run/server-runtime";
+import { HeadersFunction, json } from "@remix-run/server-runtime";
 
 import { BubbleGrid } from "~/components/bubbles/bubble-grid";
 import { fetchEmployeeImages } from "~/components/bubbles/capra-helper.server";
@@ -17,8 +17,17 @@ export const loader = async () => {
     fetchEmployeeImages(),
   ]);
 
-  return json({ images, employeeImages });
+  return json(
+    { images, employeeImages },
+    {
+      headers: {
+        "Cache-Control":
+          "public, max-age=60, s-maxage=86400, stale-while-revalidate=2678400",
+      },
+    },
+  );
 };
+export const headers: HeadersFunction = ({ loaderHeaders }) => loaderHeaders;
 
 export default function OmOss() {
   const { employeeImages } = useLoaderData<typeof loader>();
