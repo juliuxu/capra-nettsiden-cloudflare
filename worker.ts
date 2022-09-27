@@ -120,12 +120,13 @@ export function createPagesFunctionHandler<Env = any>({
           handleFetch(context, cacheKey, cache);
         }
 
-        cachedResponse.headers.set(
+        const res = cachedResponse.clone();
+        res.headers.set(
           "x-debug",
           `sMaxage=${sMaxage}, staleWhileRevalidate=${staleWhileRevalidate}, secondsSinceDate=${secondsSinceDate}`,
         );
 
-        return cachedResponse;
+        return res;
       }
 
       return await handleFetch(context, cacheKey, cache);
