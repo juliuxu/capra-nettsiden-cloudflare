@@ -48,26 +48,48 @@ export function createPagesFunctionHandler<Env = any>({
   });
 
   let handleFetch = async (context: EventContext<Env, any, any>) => {
-    let response: Response | undefined;
-
     // https://github.com/cloudflare/wrangler2/issues/117
     context.request.headers.delete("if-none-match");
 
+    // Read from Cache
+    // https://developers.cloudflare.com/workers/runtime-apis/cache/
+    const url = new URL(context.request.url);
+    const useCache =
+      url.hostname !== "localhost" && context.request.method === "GET";
+    const cacheKey = new Request(url.href, context.request);
+    const cache = useCache ? await caches.open("custom:remix") : null;
+    if (cache) {
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+    }
+
+    // Fetch asset
     try {
-      response = await (context.env as any).ASSETS.fetch(
+      let assetResponse = await (context.env as any).ASSETS.fetch(
         context.request.url,
         context.request.clone(),
       );
-      response =
-        response && response.status >= 200 && response.status < 400
-          ? new Response(response.body, response)
+      assetResponse =
+        assetResponse &&
+        assetResponse.status >= 200 &&
+        assetResponse.status < 400
+          ? new Response(assetResponse.body, assetResponse)
           : undefined;
+      if (assetResponse) return assetResponse;
     } catch {}
 
-    if (!response) {
-      response = await handleRequest(context);
-    }
+    // Remix request
+    const response = await handleRequest(context);
 
+    // Save to cache
+    if (response.ok && cache && response.headers.has("Cache-Control")) {
+      // Store the fetched response as cacheKey
+      // Use waitUntil so you can return the response without blocking on
+      // writing to cache
+      context.waitUntil(cache.put(cacheKey, response.clone()));
+    }
     return response;
   };
 
