@@ -115,11 +115,15 @@ export function createPagesFunctionHandler<Env = any>({
           sMaxage &&
           staleWhileRevalidate &&
           secondsSinceDate &&
-          sMaxage - staleWhileRevalidate < secondsSinceDate &&
-          secondsSinceDate < sMaxage + staleWhileRevalidate
+          sMaxage - staleWhileRevalidate < secondsSinceDate
         ) {
           handleFetch(context, cacheKey, cache);
         }
+
+        cachedResponse.headers.set(
+          "x-debug",
+          `sMaxage=${sMaxage}, staleWhileRevalidate=${staleWhileRevalidate}, secondsSinceDate=${secondsSinceDate}`,
+        );
 
         return cachedResponse;
       }
