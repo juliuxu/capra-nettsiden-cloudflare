@@ -1,5 +1,6 @@
 import { useLoaderData } from "@remix-run/react";
-import { HeadersFunction, json } from "@remix-run/server-runtime";
+import type { HeadersFunction } from "@remix-run/server-runtime";
+import { json } from "@remix-run/server-runtime";
 
 import { BubbleGrid } from "~/components/bubbles/bubble-grid";
 import { fetchEmployeeImages } from "~/components/bubbles/capra-helper.server";
@@ -21,8 +22,9 @@ export const loader = async () => {
     { images, employeeImages },
     {
       headers: {
-        "Cache-Control":
-          "public, max-age=60, s-maxage=86400, stale-while-revalidate=2678400",
+        "Cache-Control": `public, max-age=60, s-maxage=${
+          60 + 2678400
+        }, stale-while-revalidate=${2678400}`,
       },
     },
   );

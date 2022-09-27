@@ -31,8 +31,9 @@ export const loader = async () => {
     { images, employeeImages },
     {
       headers: {
-        "Cache-Control":
-          "public, max-age=60, s-maxage=86400, stale-while-revalidate=2678400",
+        "Cache-Control": `public, max-age=60, s-maxage=${
+          60 + 2678400
+        }, stale-while-revalidate=${2678400}`,
       },
     },
   );

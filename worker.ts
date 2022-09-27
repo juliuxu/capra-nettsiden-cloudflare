@@ -47,23 +47,13 @@ export function createPagesFunctionHandler<Env = any>({
     mode,
   });
 
-  let handleFetch = async (context: EventContext<Env, any, any>) => {
+  let handleFetch = async (
+    context: EventContext<Env, any, any>,
+    cacheKey: string | Request,
+    cache?: Cache,
+  ) => {
     // https://github.com/cloudflare/wrangler2/issues/117
     context.request.headers.delete("if-none-match");
-
-    // Read from Cache
-    // https://developers.cloudflare.com/workers/runtime-apis/cache/
-    const url = new URL(context.request.url);
-    const useCache =
-      url.hostname !== "localhost" && context.request.method === "GET";
-    const cacheKey = new Request(url.href, context.request);
-    const cache = useCache ? await caches.open("custom:remix") : null;
-    if (cache) {
-      const cachedResponse = await cache.match(cacheKey);
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-    }
 
     // Fetch asset
     try {
@@ -88,14 +78,54 @@ export function createPagesFunctionHandler<Env = any>({
       // Store the fetched response as cacheKey
       // Use waitUntil so you can return the response without blocking on
       // writing to cache
-      context.waitUntil(cache.put(cacheKey, response.clone()));
+      const responseClone = response.clone();
+      responseClone.headers.append("Date", new Date().toUTCString());
+      context.waitUntil(cache.put(cacheKey, responseClone));
     }
     return response;
   };
 
   return async (context: EventContext<Env, any, any>) => {
     try {
-      return await handleFetch(context);
+      // Read from Cache
+      // https://developers.cloudflare.com/workers/runtime-apis/cache/
+      const url = new URL(context.request.url);
+      const useCache =
+        url.hostname !== "localhost" && context.request.method === "GET";
+      const cacheKey = new Request(url.href, context.request);
+      const cache = useCache ? await caches.open("custom:remix") : undefined;
+
+      const cachedResponse = await cache?.match(cacheKey);
+      if (cachedResponse) {
+        // stale-while-revalidate
+        const responseDate = cachedResponse.headers.get("Date");
+        const cacheControl = cachedResponse.headers.get("Cache-Control");
+
+        const date = responseDate ? new Date(responseDate) : null;
+        const secondsSinceDate = date
+          ? (Date.now() - date.getTime()) / 1000
+          : 0;
+
+        let matches = cacheControl?.match(/s-maxage=(\d+)/);
+        const sMaxage = matches ? parseInt(matches[1], 10) : 0;
+
+        matches = cacheControl?.match(/stale-while-revalidate=(\d+)/);
+        const staleWhileRevalidate = matches ? parseInt(matches[1], 10) : 0;
+
+        if (
+          sMaxage &&
+          staleWhileRevalidate &&
+          secondsSinceDate &&
+          sMaxage - staleWhileRevalidate < secondsSinceDate &&
+          secondsSinceDate < sMaxage + staleWhileRevalidate
+        ) {
+          handleFetch(context, cacheKey, cache);
+        }
+
+        return cachedResponse;
+      }
+
+      return await handleFetch(context, cacheKey, cache);
     } catch (e) {
       if (process.env.NODE_ENV === "development" && e instanceof Error) {
         console.error(e);
