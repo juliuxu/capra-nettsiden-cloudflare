@@ -112,10 +112,11 @@ export function createPagesFunctionHandler<Env = any>({
         const staleWhileRevalidate = matches ? parseInt(matches[1], 10) : 0;
 
         if (
-          sMaxage &&
-          staleWhileRevalidate &&
-          secondsSinceDate &&
-          sMaxage - staleWhileRevalidate < secondsSinceDate
+          true ||
+          (sMaxage &&
+            staleWhileRevalidate &&
+            secondsSinceDate &&
+            sMaxage - staleWhileRevalidate < secondsSinceDate)
         ) {
           console.log("[SWR] We are fetching");
           handleFetch(context, cacheKey, cache);
