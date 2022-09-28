@@ -10,6 +10,7 @@ import { ContentAndImageBox } from "~/components/content-and-image-box/content-a
 import { TitleAndText } from "~/components/title-and-text";
 import { Todo } from "~/components/todo";
 import { TypingText } from "~/components/typing-text";
+import { cacheControlHeaders } from "~/utils/cache";
 import { fetchImageAssets } from "~/utils/dataRetrieval";
 import { shuffled } from "~/utils/random";
 
@@ -30,11 +31,7 @@ export const loader = async () => {
   return json(
     { images, employeeImages },
     {
-      headers: {
-        "Cache-Control": `public, max-age=60, s-maxage=${
-          60 + 2678400
-        }, stale-while-revalidate=${2678400}`,
-      },
+      headers: cacheControlHeaders,
     },
   );
 };

@@ -79,6 +79,23 @@ export function createPagesFunctionHandler<Env = any>({
       // Use waitUntil so you can return the response without blocking on
       // writing to cache
       response.headers.set("X-SWR-Date", new Date().toUTCString());
+
+      // Hack: Extend s-maxage with stale-while-revalidate time
+      const cacheControl = response.headers.get("Cache-Control");
+      let matches = cacheControl?.match(/s-maxage=(\d+)/);
+      const sMaxage = matches ? parseInt(matches[1], 10) : 0;
+      matches = cacheControl?.match(/stale-while-revalidate=(\d+)/);
+      const staleWhileRevalidate = matches ? parseInt(matches[1], 10) : 0;
+      if (sMaxage && staleWhileRevalidate) {
+        response.headers.set(
+          "Cache-Control",
+          cacheControl?.replace(
+            /s-maxage=(\d+)/,
+            `s-maxage=${sMaxage + staleWhileRevalidate}`,
+          ) ?? "",
+        );
+      }
+
       context.waitUntil(cache.put(cacheKey, response.clone()));
     }
     return response;
@@ -102,7 +119,7 @@ export function createPagesFunctionHandler<Env = any>({
 
         const date = responseDate ? new Date(responseDate) : null;
         const secondsSinceDate = date
-          ? (Date.now() - date.getTime()) / 1000
+          ? (new Date().getTime() - date.getTime()) / 1000
           : 0;
 
         let matches = cacheControl?.match(/s-maxage=(\d+)/);
@@ -117,18 +134,8 @@ export function createPagesFunctionHandler<Env = any>({
           secondsSinceDate &&
           sMaxage - staleWhileRevalidate < secondsSinceDate
         ) {
-          console.log("[SWR] We are fetching");
           context.waitUntil(handleFetch(context, cacheKey, cache));
         }
-
-        console.log("[SWR] These are the values");
-        console.log("sMaxAge", sMaxage);
-        console.log("staleWhileRevalidate", staleWhileRevalidate);
-        console.log("secondsSinceDate", secondsSinceDate);
-        console.log(
-          "sMaxage - staleWhileRevalidate",
-          sMaxage - staleWhileRevalidate,
-        );
 
         return cachedResponse;
       }

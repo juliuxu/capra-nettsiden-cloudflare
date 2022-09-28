@@ -10,6 +10,7 @@ import { TitleAndText } from "~/components/title-and-text";
 import { Todo } from "~/components/todo";
 import type { ValueProposition } from "~/components/value-wheel/value-wheel";
 import { ValueWheel } from "~/components/value-wheel/value-wheel";
+import { cacheControlHeaders } from "~/utils/cache";
 import { fetchImageAssets } from "~/utils/dataRetrieval";
 
 export const loader = async () => {
@@ -21,11 +22,7 @@ export const loader = async () => {
   return json(
     { images, employeeImages },
     {
-      headers: {
-        "Cache-Control": `public, max-age=60, s-maxage=${
-          60 + 2678400
-        }, stale-while-revalidate=${2678400}`,
-      },
+      headers: cacheControlHeaders,
     },
   );
 };
