@@ -109,7 +109,7 @@ export function createPagesFunctionHandler<Env = any>({
       const useCache =
         url.hostname !== "localhost" && context.request.method === "GET";
       const cacheKey = new Request(url.href, context.request);
-      const cache = useCache ? await caches.open("custom:remix") : undefined;
+      const cache = useCache ? await caches.open("custom:remix2") : undefined;
 
       const cachedResponse = await cache?.match(cacheKey);
       if (cachedResponse) {

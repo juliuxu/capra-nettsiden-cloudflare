@@ -9,7 +9,7 @@ import { FilterRow } from "~/components/filter-row";
 import { TitleAndText } from "~/components/title-and-text";
 import { sanityClient } from "~/sanity/sanity-client.server";
 import type { Author, JobCategory } from "~/sanity/schema";
-import { cacheControlHeaders } from "~/utils/cache";
+import { cacheControl_60s_server_1day_swr } from "~/utils/cache";
 import type { Images } from "~/utils/dataRetrieval";
 import { fetchImageAssets } from "~/utils/dataRetrieval";
 import { urlFor } from "~/utils/imageBuilder";
@@ -52,7 +52,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   return json(
     { items: filteredItems, filters, icons },
     {
-      headers: cacheControlHeaders,
+      headers: cacheControl_60s_server_1day_swr,
     },
   );
 };

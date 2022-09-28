@@ -10,7 +10,7 @@ import { TitleAndText } from "~/components/title-and-text";
 import { Todo } from "~/components/todo";
 import type { ValueProposition } from "~/components/value-wheel/value-wheel";
 import { ValueWheel } from "~/components/value-wheel/value-wheel";
-import { cacheControlHeaders } from "~/utils/cache";
+import { cacheControl_60s_server_1month_swr } from "~/utils/cache";
 import { fetchImageAssets } from "~/utils/dataRetrieval";
 
 export const loader = async () => {
@@ -22,7 +22,7 @@ export const loader = async () => {
   return json(
     { images, employeeImages },
     {
-      headers: cacheControlHeaders,
+      headers: cacheControl_60s_server_1month_swr,
     },
   );
 };

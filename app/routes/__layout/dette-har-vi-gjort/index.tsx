@@ -13,7 +13,7 @@ import { FilterRow } from "~/components/filter-row";
 import { TitleAndText } from "~/components/title-and-text";
 import { sanityClient } from "~/sanity/sanity-client.server";
 import type { Selvskryt, Selvskrytfilter } from "~/sanity/schema";
-import { cacheControlHeaders } from "~/utils/cache";
+import { cacheControl_60s_server_1month_swr } from "~/utils/cache";
 import { urlFor } from "~/utils/imageBuilder";
 import { uniqueBy } from "~/utils/misc";
 
@@ -48,7 +48,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   return json(
     { items: filteredItems, filters },
     {
-      headers: cacheControlHeaders,
+      headers: cacheControl_60s_server_1month_swr,
     },
   );
 };

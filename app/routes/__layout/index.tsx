@@ -10,7 +10,7 @@ import { ContentAndImageBox } from "~/components/content-and-image-box/content-a
 import { TitleAndText } from "~/components/title-and-text";
 import { Todo } from "~/components/todo";
 import { TypingText } from "~/components/typing-text";
-import { cacheControlHeaders } from "~/utils/cache";
+import { cacheControl_60s_server_1month_swr } from "~/utils/cache";
 import { fetchImageAssets } from "~/utils/dataRetrieval";
 import { shuffled } from "~/utils/random";
 
@@ -31,7 +31,7 @@ export const loader = async () => {
   return json(
     { images, employeeImages },
     {
-      headers: cacheControlHeaders,
+      headers: cacheControl_60s_server_1month_swr,
     },
   );
 };
